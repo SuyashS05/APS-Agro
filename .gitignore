@@ -11,10 +11,10 @@ legal dataset/
 # *.weights
 
 # ===== MEDIA =====
-*.mp4
-*.avi
-*.mov
-*.zip
+# *.mp4
+# *.avi
+# *.mov
+# *.zip
 
 # ===== PYTHON =====
 __pycache__/
