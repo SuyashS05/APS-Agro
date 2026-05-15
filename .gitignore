@@ -1,47 +1,31 @@
-Dataset/
+# ===== DATASETS =====
+# Dataset/
 YOLO_Dataset/
 legal dataset/
 
-*.pt
-*.pth
-*.onnx
-*.h5
-*.mp4
-*.zip
-
-__pycache__/
-.ipynb_checkpoints/
-venv/
-.venv/
-
-# Datasets
-Dataset/
-YOLO_Dataset/
-legal dataset/
-
-# Models
+# ===== MODELS =====
 *.pt
 *.pth
 *.onnx
 *.h5
 *.weights
 
-# Videos/images
+# ===== MEDIA =====
 *.mp4
 *.avi
 *.mov
 *.zip
 
-# Python
+# ===== PYTHON =====
 __pycache__/
 *.pyc
 
-# Jupyter
+# ===== JUPYTER =====
 .ipynb_checkpoints/
 
-# Virtual env
+# ===== ENV =====
 venv/
 .venv/
 
-# VSCode
+# ===== IDE =====
 .vscode/
