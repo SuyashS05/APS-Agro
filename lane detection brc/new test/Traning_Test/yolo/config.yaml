@@ -1,0 +1,12 @@
+train: F:/lane detection brc/first_test_annotation/images/Train
+val: F:/lane detection brc/first_test_annotation/images/Test
+
+# YOLO annotation paths
+train_labels: F:/lane detection brc/first_test_annotation/yolo_annotation/Train
+val_labels: F:/lane detection brc/first_test_annotation/yolo_annotation/Test
+
+# Number of classes
+nc: 3  
+
+# Class names
+names: ["Main Row", "Adjacent Row", "APS Path"]

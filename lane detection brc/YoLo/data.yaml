@@ -1,0 +1,4 @@
+train: /content/drive/MyDrive/lane_detection_brc/YoLo/images/Train
+val: /content/drive/MyDrive/lane_detection_brc/YoLo/images/Test
+nc: 3  # Number of classes (change if needed)
+names: ["Main Row", "Adjacent Row", "APS Path"]
