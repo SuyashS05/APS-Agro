@@ -4,11 +4,11 @@ YOLO_Dataset/
 legal dataset/
 
 # ===== MODELS =====
-*.pt
-*.pth
-*.onnx
-*.h5
-*.weights
+# *.pt
+# *.pth
+# *.onnx
+# *.h5
+# *.weights
 
 # ===== MEDIA =====
 *.mp4
