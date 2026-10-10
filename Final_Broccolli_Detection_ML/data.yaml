@@ -1,0 +1,6 @@
+train: E:/brocolli_detection/yolov5/dataset/train/images
+val: E:/brocolli_detection/yolov5/dataset/val/images
+
+nc: 1
+names: ['broccoliP', 'broccoliF', 'soil']
+
