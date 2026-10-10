@@ -12,6 +12,20 @@ The repository is an experiment archive rather than a packaged application: scri
 - **Hardware experiments:** ESP32-CAM stream inference and serial signaling prototypes in `HardwareSetup/`.
 - **Notebooks and artifacts:** preprocessing/training notebooks, sample outputs, spreadsheets, model weights, and recorded videos.
 
+## Visual results
+
+The fine-tuned model run under `Final_Broccolli_Detection_ML/YOLO_Dataset/trained_model2.0/fine_tuned_model_broccoli2.0/` includes Ultralytics training previews. The label summary shows three classes: **Broccoli Plant**, **Broccoli Fruit**, and **Soil/Land**. Its plotted counts are imbalanced, with plant instances most common and fruit instances least common.
+
+| Label distribution and box locations | Training batch preview |
+| --- | --- |
+| ![Label counts, box locations, and normalized box dimensions](Final_Broccolli_Detection_ML/YOLO_Dataset/trained_model2.0/fine_tuned_model_broccoli2.0/labels.jpg) | ![Training examples with labeled boxes](Final_Broccolli_Detection_ML/YOLO_Dataset/trained_model2.0/fine_tuned_model_broccoli2.0/train_batch0.jpg) |
+
+An additional augmented training batch is available as [train_batch2.jpg](Final_Broccolli_Detection_ML/YOLO_Dataset/trained_model2.0/fine_tuned_model_broccoli2.0/train_batch2.jpg). These are training and label-inspection artifacts, not evaluation metrics.
+
+### Annotated field video
+
+[Open `output_annotated3.mp4`](output_annotated3.mp4) to view a sample broccoli-field detection output. The clip is approximately 10 seconds long (303 frames at 30 fps, 478 × 850) and overlays detected broccoli plants and soil/land with confidence scores. It is an example output, not a benchmark or accuracy claim.
+
 ## Broccoli inference
 
 The root `test.py` loads `best.pt` from the repository root. It offers three modes: select an image, use the default webcam, or select a video. Image results are displayed and saved by Ultralytics; video and webcam detections are shown in a window. Press **q** to stop a live video or webcam run.
@@ -41,7 +55,7 @@ This workflow requires a graphical desktop for the file picker and OpenCV window
 
 `train_yolo.py` is an older YOLOv5 training entry point. It expects a YOLOv5 Python package, PyTorch, and PyYAML, and chooses CUDA when available. The current root `data.yaml` contains absolute paths from a previous Windows machine (`E:/brocolli_detection/...`), so edit its `train` and `val` values before training. The referenced image directories should have corresponding `labels/train` and `labels/val` folders in the layout expected by the training script.
 
-The checked-in configuration also declares `nc: 1` alongside three class names. Confirm the intended classes and make `nc` match the number of entries in `names` before using it. The separate YOLO lane-detection configuration and scripts are under `lane detection brc/YoLo/`.
+The root configuration declares `nc: 1` alongside three class names. Confirm the intended classes and make `nc` match the number of entries in `names` before using it. The three-class fine-tuned experiment shown in the visual artifacts is a separate run and does not use this root configuration as currently written. The separate YOLO lane-detection configuration and scripts are under `lane detection brc/YoLo/`.
 
 Dataset preparation scripts at the root include `annotation.py`, `Augmentation.py`, `imageCrop.py`, `partition.py`, and several resize/rename utilities. These are standalone utilities with paths and assumptions embedded in their source; inspect and update those paths for your dataset before running them. `partition.py` expects images in `dataset/resized_plant` and labels in `dataset/annotations` and writes a train/validation structure under `dataset/`.
 
