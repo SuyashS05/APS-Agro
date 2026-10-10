@@ -18,13 +18,15 @@ The fine-tuned model run under `Final_Broccolli_Detection_ML/YOLO_Dataset/traine
 
 | Label distribution and box locations | Training batch preview |
 | --- | --- |
-| ![Label counts, box locations, and normalized box dimensions](Final_Broccolli_Detection_ML/YOLO_Dataset/trained_model2.0/fine_tuned_model_broccoli2.0/labels.jpg) | ![Training examples with labeled boxes](Final_Broccolli_Detection_ML/YOLO_Dataset/trained_model2.0/fine_tuned_model_broccoli2.0/train_batch0.jpg) |
+| ![Label counts, box locations, and normalized box dimensions](docs/assets/labels.jpg) | ![Training examples with labeled boxes](docs/assets/train_batch0.jpg) |
 
-An additional augmented training batch is available as [train_batch2.jpg](Final_Broccolli_Detection_ML/YOLO_Dataset/trained_model2.0/fine_tuned_model_broccoli2.0/train_batch2.jpg). These are training and label-inspection artifacts, not evaluation metrics.
+An additional augmented training batch is available as [train_batch2.jpg](docs/assets/train_batch2.jpg). These are training and label-inspection artifacts, not evaluation metrics.
 
 ### Annotated field video
 
-[Open `output_annotated3.mp4`](output_annotated3.mp4) to view a sample broccoli-field detection output. The clip is approximately 10 seconds long (303 frames at 30 fps, 478 × 850) and overlays detected broccoli plants and soil/land with confidence scores. It is an example output, not a benchmark or accuracy claim.
+[![Preview of the annotated field video; click to open the MP4](docs/assets/output_annotated3_preview.jpg)](output_annotated3.mp4)
+
+Click the preview to open `output_annotated3.mp4`. The clip is approximately 10 seconds long (303 frames at 30 fps, 478 × 850) and overlays detected broccoli plants and soil/land with confidence scores. It is an example output, not a benchmark or accuracy claim.
 
 ## Broccoli inference
 
