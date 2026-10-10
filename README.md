@@ -1,43 +1,110 @@
-# APS Agro: Broccoli and Field Lane Detection
+# APS Agro: Broccoli Detection and Field-Lane Perception
 
-This repository contains computer-vision experiments for agricultural field monitoring. The main thread of work is detecting broccoli plants or heads in images and video, with related experiments in crop-lane detection, dataset preparation, and ESP32 camera integration.
+APS Agro is an experimental computer-vision repository for agricultural field monitoring. Its primary workstream detects broccoli plants, broccoli heads, and soil/land in field imagery. Related work explores crop-row and path detection, image/label preparation, video inference, and an ESP32-CAM prototype.
 
-The repository is an experiment archive rather than a packaged application: scripts have separate dependencies and several still use machine-specific paths. Start with the YOLO inference script below and adapt paths and hardware settings to your setup.
+The repository contains several independent experiments rather than one integrated, release-ready application. This README describes the recorded methods and artifacts, provides a starting point for inference, and distinguishes observed results from claims that the available evidence cannot support.
 
-## What is included
+## Research scope
 
-- **Broccoli detection:** YOLO training and inference scripts, a trained weights file (`best.pt`), video examples, and datasets/annotations under `brocolli_detection/`, `Dataset/`, and `SelfLearn/`.
-- **Lane detection:** YOLO, LaneNet/U-Net, and DeepLab experiments and data under `lane detection brc/` and `final_Broccoli_Lane_detection_ML/`.
-- **Dataset utilities:** scripts for drawing YOLO annotations, augmentation, cropping, resizing, renaming, and train/validation partitioning.
-- **Hardware experiments:** ESP32-CAM stream inference and serial signaling prototypes in `HardwareSetup/`.
-- **Notebooks and artifacts:** preprocessing/training notebooks, sample outputs, spreadsheets, model weights, and recorded videos.
+The work represented here has three related objectives:
 
-## Visual results
+1. **Broccoli scene detection:** localize broccoli plants, broccoli fruit/heads, and soil/land in images and video using YOLO object detectors.
+2. **Field-row perception:** explore detection and segmentation of crop rows and paths using YOLO, LaneNet/U-Net, and DeepLab-style experiments.
+3. **Field monitoring prototypes:** process recorded or streamed video, display detections, estimate counts, draw a simple image-space grid, and send serial messages to an ESP board.
 
-The fine-tuned model run under `Final_Broccolli_Detection_ML/YOLO_Dataset/trained_model2.0/fine_tuned_model_broccoli2.0/` includes Ultralytics training previews. The label summary shows three classes: **Broccoli Plant**, **Broccoli Fruit**, and **Soil/Land**. Its plotted counts are imbalanced, with plant instances most common and fruit instances least common.
+These are separate workstreams. The repository does not currently define a single end-to-end system joining lane localization, plant counting, GPS coordinates, and a calibrated field map.
 
-| Label distribution and box locations | Training batch preview |
+### Broccoli detector classes
+
+The three-class configuration in `Final_Broccolli_Detection_ML/YOLO_Dataset/data.yaml` defines:
+
+| Class ID | Class name |
+| ---: | --- |
+| 0 | Broccoli Plant |
+| 1 | Broccoli Fruit |
+| 2 | Soil/Land |
+
+The label-distribution plot indicates a class imbalance: plant labels are most frequent and fruit labels least frequent. The repository does not include a dataset card documenting collection sites, dates, camera setup, annotation protocol, or the exact image counts represented by each split.
+
+### Lane-detection classes
+
+The YOLO lane configuration defines three classes: **Main Row**, **Adjacent Row**, and **APS Path**. Other lane experiments explore semantic masks and U-Net/LaneNet or DeepLab variants. Their source, data, and outputs are spread across `lane detection brc/` and `final_Broccoli_Lane_detection_ML/`.
+
+## System outline
+
+```mermaid
+flowchart LR
+    A[Field images or video] --> B[Dataset preparation and YOLO labels]
+    B --> C[YOLO detector training]
+    C --> D[Image, video, or camera inference]
+    D --> E[Boxes, class labels, confidence scores]
+    E --> F[Optional counting and grid visualization]
+    F --> G[Optional serial messages to ESP board]
+```
+
+The grid prototype maps pixel coordinates from a camera frame to a fixed 800 × 800 display. It is an image-space visualization; no camera calibration, ground-plane transform, or geographic coordinate registration is implemented in the inspected counting scripts. Counts should therefore be treated as prototype estimates, not field-survey measurements.
+
+## Recorded results
+
+The values below are read from the checked-in Ultralytics `results.csv` files. Precision, recall, and mAP are the logged **validation** metrics for those runs. They are not results on a documented, independent test set.
+
+| Experiment | Logged epochs | Precision | Recall | mAP@0.50 | mAP@0.50:0.95 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Broccoli detector v1.0, final logged epoch | 50 | 0.7981 | 0.7615 | 0.8108 | 0.4193 |
+| Lane YOLO run, final logged epoch | 100 | 0.5157 | 0.5351 | 0.5236 | 0.2376 |
+
+For broccoli v1.0, the highest recorded mAP@0.50:0.95 in the CSV is **0.4341 at epoch 23**; the final epoch value is 0.4193. The PR curve saved with that run reports class AP@0.50 values of 0.902 for Broccoli Plant, 0.933 for Broccoli Fruit, and 0.656 for Soil/Land, with aggregate mAP@0.50 of 0.830. These are values from the saved run artifacts and should be interpreted with the split and provenance limitations below.
+
+| Training curves | Precision–recall curve |
 | --- | --- |
-| ![Label counts, box locations, and normalized box dimensions](docs/assets/labels.jpg) | ![Training examples with labeled boxes](docs/assets/train_batch0.jpg) |
+| ![Training and validation losses and detector metrics over 50 epochs](docs/results/broccoli_v1_results.png) | ![Precision recall curves for the three broccoli detector classes](docs/results/broccoli_v1_pr_curve.png) |
 
-An additional augmented training batch is available as [train_batch2.jpg](docs/assets/train_batch2.jpg). These are training and label-inspection artifacts, not evaluation metrics.
+| Normalized validation confusion matrix | Example validation predictions |
+| --- | --- |
+| ![Normalized confusion matrix for the broccoli detector](docs/results/broccoli_v1_confusion_matrix_normalized.png) | ![Example detector predictions on validation batches](docs/results/broccoli_v1_val_predictions.jpg) |
 
-### Annotated field video
+The `trained_model2.0/fine_tuned_model_broccoli2.0` log contains two epoch rows, although its saved arguments specify a 25-epoch run. The sibling `fine_tuned_model_broccoli2.02` log contains one epoch row. These records are incomplete and are not presented as final fine-tuning results. Their saved arguments both point to the v1.0 `best.pt` as the starting checkpoint; the artifacts do not establish a sequential v2.0-to-v2.02 fine-tuning chain.
 
-[![Preview of the annotated field video; click to open the MP4](docs/assets/output_annotated3_preview.jpg)](output_annotated3.mp4)
+### Qualitative examples and exported video
 
-Click the preview to open `output_annotated3.mp4`. The clip is approximately 10 seconds long (303 frames at 30 fps, 478 × 850) and overlays detected broccoli plants and soil/land with confidence scores. It is an example output, not a benchmark or accuracy claim.
+The following plots show the three-class label distribution and examples of training annotations. They are useful for inspecting labels and augmentations, but do not measure generalization.
 
-## Broccoli inference
+| Label distribution and box geometry | Training batch with YOLO boxes |
+| --- | --- |
+| ![Class counts and distribution of normalized bounding boxes](docs/results/labels.jpg) | ![Training images annotated with class IDs and boxes](docs/results/train_batch0.jpg) |
 
-The root `test.py` loads `best.pt` from the repository root. It offers three modes: select an image, use the default webcam, or select a video. Image results are displayed and saved by Ultralytics; video and webcam detections are shown in a window. Press **q** to stop a live video or webcam run.
+An additional augmented training batch is available as [train_batch2.jpg](docs/results/train_batch2.jpg).
 
-Create a Python environment and install the packages used by this script:
+[![Preview of the annotated broccoli-field video; click to open the video](docs/results/output_annotated3_preview.jpg)](docs/results/output_annotated3.mp4)
+
+The linked `output_annotated3.mp4` is approximately 10 seconds long (303 frames at 30 fps, 478 × 850). It overlays detections and confidence scores. Other saved examples are [output_annotated4.mp4](docs/results/output_annotated4.mp4), [output_annotated5.mp4](docs/results/output_annotated5.mp4), and [output_with_grid_map.mp4](docs/results/output_with_grid_map.mp4). The videos demonstrate visual output only; they do not establish detection accuracy, counting accuracy, or real-time performance on a specified device.
+
+## Repository map
+
+| Path | Contents |
+| --- | --- |
+| `Dataset/` | Image annotation, augmentation, crop/resize, split utilities, a legacy YOLOv5 training script, and an image/video/webcam inference script |
+| `Final_Broccolli_Detection_ML/` | Broccoli dataset/configuration and YOLO experiment runs, including training arguments, logs, weights, curves, and validation examples |
+| `lane detection brc/` | Lane imagery/labels, YOLO configs and runs, and segmentation experiments |
+| `final_Broccoli_Lane_detection_ML/` | Additional lane annotation, preprocessing, GPS-related spreadsheets/scripts, and experiments |
+| `HardwareSetup/` | ESP32-CAM stream inference and serial-based counting prototypes |
+| `SelfLearn/` | Additional labeled images and self-learning experiments |
+| `Colab Notebooks/` | Notebook-based preprocessing and training workflow |
+| `docs/results/` | Curated visual artifacts and exported demonstration videos referenced by this README |
+| `best.pt` | Root-level model loaded by `Dataset/test.py` when run from the repository root |
+
+The project includes substantial image, video, and model artifacts. Directory names and capitalization reflect the current repository and include historical spellings such as `Broccolli`.
+
+## Inference
+
+The most direct included interactive inference script is `Dataset/test.py`. It loads `best.pt` from the current working directory and offers image, webcam, and video modes. It uses a desktop file picker and OpenCV display windows.
+
+Create an environment with Python and install the packages used by that script:
 
 ```bash
 python -m venv .venv
-# Windows:
-.venv\Scripts\activate
+# Windows PowerShell:
+.venv\Scripts\Activate.ps1
 # macOS/Linux:
 source .venv/bin/activate
 
@@ -45,47 +112,65 @@ python -m pip install --upgrade pip
 python -m pip install ultralytics opencv-python matplotlib
 ```
 
-Run from the repository root so `best.pt` resolves correctly:
+Run it from the repository root so the relative model path resolves:
 
 ```bash
-python test.py
+python Dataset/test.py
 ```
 
-This workflow requires a graphical desktop for the file picker and OpenCV windows. For headless environments, adapt the script to accept an input path and save predictions without calling `show()`/`imshow()`.
+Choose `1` for an image, `2` for the default webcam, or `3` for a video. Press **q** to stop webcam/video display. Image predictions are displayed and saved by the Ultralytics result object; video predictions are displayed but the script does not write an annotated video file.
 
-## Training and datasets
+For GPU inference, install a PyTorch build compatible with the local CUDA setup before installing or using Ultralytics. The repository does not pin Python, PyTorch, Ultralytics, CUDA, or OpenCV versions, so exact environment reproduction is not currently guaranteed.
 
-`train_yolo.py` is an older YOLOv5 training entry point. It expects a YOLOv5 Python package, PyTorch, and PyYAML, and chooses CUDA when available. The current root `data.yaml` contains absolute paths from a previous Windows machine (`E:/brocolli_detection/...`), so edit its `train` and `val` values before training. The referenced image directories should have corresponding `labels/train` and `labels/val` folders in the layout expected by the training script.
+## Training and data preparation
 
-The root configuration declares `nc: 1` alongside three class names. Confirm the intended classes and make `nc` match the number of entries in `names` before using it. The three-class fine-tuned experiment shown in the visual artifacts is a separate run and does not use this root configuration as currently written. The separate YOLO lane-detection configuration and scripts are under `lane detection brc/YoLo/`.
+### Dataset format
 
-Dataset preparation scripts at the root include `annotation.py`, `Augmentation.py`, `imageCrop.py`, `partition.py`, and several resize/rename utilities. These are standalone utilities with paths and assumptions embedded in their source; inspect and update those paths for your dataset before running them. `partition.py` expects images in `dataset/resized_plant` and labels in `dataset/annotations` and writes a train/validation structure under `dataset/`.
-
-## ESP32-CAM experiments
-
-`HardwareSetup/esp32/test.py` reads an ESP32-CAM HTTP stream and writes an annotated video. `plantCount.py` and `livecamPlantCount.py` add object counting, a grid visualization, and serial commands to an ESP board. Before running these scripts, update the model/video paths, camera stream URL, and serial port in the source. They require OpenCV, Ultralytics, NumPy, and (for serial-enabled scripts) pyserial. The current scripts are prototypes and assume a configured camera and compatible firmware listening for the emitted commands.
-
-## Repository map
+The broccoli detector uses the Ultralytics/YOLO object-detection convention: an image and a same-basename text label file containing one normalized `class_id x_center y_center width height` box per line. The recorded v1.0 arguments specify 640-pixel input, batch size 16, 50 epochs, seed 0, and validation during training. The v1.0 run's `args.yaml`, `results.csv`, weights, and diagnostic figures are under:
 
 ```text
-.
-├── best.pt                         # Root YOLO model used by test.py
-├── test.py                         # Image, webcam, and video inference
-├── train_yolo.py                   # YOLOv5 training experiment
-├── data.yaml                       # Root broccoli dataset configuration
-├── annotation.py / partition.py    # Dataset annotation and splitting tools
-├── brocolli_detection/             # Broccoli data, annotations, and videos
-├── Dataset/                        # Additional image dataset
-├── SelfLearn/                      # Self-learning images and labels
-├── lane detection brc/             # Lane detection experiments and data
-├── final_Broccoli_Lane_detection_ML/ # Later experiments, GPS sheets, data
-├── HardwareSetup/                  # ESP32/ESP32-CAM prototypes
-└── Colab Notebooks/                # Notebook-based preprocessing/training
+Final_Broccolli_Detection_ML/YOLO_Dataset/trained_model1.0/broccoli_model/
 ```
 
-## Notes
+The fine-tuning records are under `Final_Broccolli_Detection_ML/YOLO_Dataset/trained_model2.0/`. Saved `args.yaml` files contain paths from Google Colab/Drive. Update the `data` and `model` paths before attempting to reproduce a run.
 
-- There is no single project-wide dependency file; install dependencies for the specific script you intend to run.
-- Many datasets and output videos are large. Check available storage before copying or processing them.
-- Paths, class mappings, model versions, and dataset layouts vary among experiments. Verify them against the selected script before training or inference.
-- `best.pt` is the provided model artifact; its metrics and training provenance are not documented in the repository.
+### Configuration and reproducibility cautions
+
+- The root `data.yaml` and `Final_Broccolli_Detection_ML/data.yaml` each declare `nc: 1` but list three class names. The broccoli experiment-specific configuration at `Final_Broccolli_Detection_ML/YOLO_Dataset/data.yaml` correctly declares three classes, but its train/validation paths are absolute Colab paths.
+- `Dataset/train_yolo.py` is a legacy YOLOv5 entry point with a hard-coded Python package path from one Windows machine. It reads the root `data.yaml`; as checked in, it is not a portable reproduction of the later Ultralytics runs.
+- The lane YOLO YAML and some training code also contain absolute Colab or Windows paths. Repoint them to the local image and label directories before use.
+- `Dataset/partition.py` shuffles with Python's unseeded global random state, copies files into train/validation folders, and warns when a label file is missing. It does not stratify by class or group related frames by source video. If neighboring frames or augmented derivatives cross splits, validation metrics may be optimistic.
+- The inspected annotation utility draws on a resized 800 × 600 preview and normalizes box coordinates using that display size. It should be checked before using it to generate labels for images with other aspect ratios.
+- Augmentation and preprocessing scripts contain hard-coded local paths and assumptions. Inspect each script before running it, and keep augmented variants of a source image within the same data split.
+
+For a defensible new experiment, record dataset version and provenance, class mapping, source-level train/validation/test split, random seeds, package and hardware versions, model checkpoint, and all inference thresholds. Reserve a test split that is not used for training or model selection, and report per-class as well as aggregate metrics.
+
+## Lane and hardware experiments
+
+The lane YOLO run uses three classes (Main Row, Adjacent Row, APS Path), a YOLOv8n checkpoint, 640-pixel input, batch size 16, and 100 configured epochs. Its saved CSV contains 100 validation rows. The corresponding run artifacts—including `args.yaml`, `results.csv`, PR and confusion-matrix plots, and validation predictions—are under:
+
+```text
+lane detection brc/new test/Traning_Test/yolo/output/yolo_lane_detection/
+```
+
+LaneNet/U-Net and DeepLab-related scripts are experimental alternatives; their dependencies, input masks, and data paths differ. No unified evaluation protocol across these approaches is documented.
+
+The ESP32 scripts in `HardwareSetup/esp32/` read a configured camera stream, run YOLO, and may send `PLANT` or `FRUIT` serial commands. They embed example network URLs, serial port settings, and model paths. Edit those values for the local camera, board, and checkpoint. These scripts are hardware prototypes; the repository does not include firmware, a wiring specification, or a calibrated counting validation.
+
+## Limitations and research status
+
+The repository is valuable as a record of data preparation, model experiments, and prototype outputs. The available evidence is not sufficient to support a general claim of field-ready performance because:
+
+- dataset provenance, collection conditions, annotation guidance, and exact split membership are not documented;
+- no independent held-out test set or repeated-seed evaluation is identified;
+- class frequency is imbalanced, and the PR artifact shows lower AP for Soil/Land than for the two broccoli classes;
+- fine-tuning logs are incomplete, and training software versions are not pinned;
+- several training and hardware scripts use machine-specific paths and settings;
+- video examples have no ground-truth tracks or validated counting scores; and
+- the image-space grid is not a calibrated map of physical field coordinates.
+
+No `LICENSE` file or citation metadata is present in the repository snapshot. Add dataset and model provenance, attribution, and licensing information before redistributing the data or presenting the work as a reproducible benchmark.
+
+## Acknowledgements and citation
+
+No formal paper, author list, or citation entry is included in the repository. If this work is used in a report or publication, cite the specific repository revision and identify the dataset, checkpoint, configuration, and validation split used. Do not cite the demonstration videos as quantitative evaluation.
