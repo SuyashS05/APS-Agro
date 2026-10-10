@@ -75,9 +75,9 @@ The following plots show the three-class label distribution and examples of trai
 
 An additional augmented training batch is available as [train_batch2.jpg](docs/results/train_batch2.jpg).
 
-[![Preview of the annotated broccoli-field video; click to open the video](docs/results/output_annotated3_preview.jpg)](docs/results/output_annotated3.mp4)
+[![Looping animated preview of the annotated broccoli-field video; click to open the full video](docs/results/output_annotated3_preview.gif)](docs/results/output_annotated3.mp4)
 
-The linked `output_annotated3.mp4` is approximately 10 seconds long (303 frames at 30 fps, 478 × 850). It overlays detections and confidence scores. Other saved examples are [output_annotated4.mp4](docs/results/output_annotated4.mp4), [output_annotated5.mp4](docs/results/output_annotated5.mp4), and [output_with_grid_map.mp4](docs/results/output_with_grid_map.mp4). The videos demonstrate visual output only; they do not establish detection accuracy, counting accuracy, or real-time performance on a specified device.
+The embedded GIF is a 5-second, looping preview. Click it to open the full `output_annotated3.mp4`, which is approximately 10 seconds long (303 frames at 30 fps, 478 × 850). It overlays detections and confidence scores. Other saved examples are [output_annotated4.mp4](docs/results/output_annotated4.mp4), [output_annotated5.mp4](docs/results/output_annotated5.mp4), and [output_with_grid_map.mp4](docs/results/output_with_grid_map.mp4). The videos demonstrate visual output only; they do not establish detection accuracy, counting accuracy, or real-time performance on a specified device.
 
 ## Repository map
 
